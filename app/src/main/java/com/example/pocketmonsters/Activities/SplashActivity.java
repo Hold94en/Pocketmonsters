@@ -18,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
+    private Intent intent;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,36 +27,49 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.splash_screen);
 
         Repository repository = Repository.getInstance(this);
-        final Intent intent = new Intent(SplashActivity.this, MapActivity.class);
+        intent = new Intent(SplashActivity.this, MapActivity.class);
 
-        if (repository.isUserInSharedPrefs()) {
+        if (getString(R.string.test_session_id).length() > 0) {
 
-            ModelSingleton.getInstance().updateSignedUser(repository.getUserFromSharedPrefs());
-            Log.d("DBG", "Splash Activity onCreate: user found; " + ModelSingleton.getInstance().getSignedUser().toString());
-            startActivity(intent);
+            goToMapActivityWithSessionId(getString(R.string.test_session_id));
 
-        } else {
+        } else  {
 
-            Log.d("DBG", "Splash Activity onCreate: user not found");
+            if (repository.isUserInSharedPrefs()) {
 
-            repository.requestSessionId(new VolleyCallback() {
-                @Override
-                public void onSuccess(JSONObject response) {
-                    try {
-                        String sessionId = response.get("session_id").toString();
-                        ModelSingleton.getInstance().getSignedUser().setSessionId(sessionId);
-                        SplashActivity.this.startActivity(intent);
-                        finish();
-                    } catch (JSONException e) {
-                        Log.d("DBG", "onSuccess: " + e);
+                ModelSingleton.getInstance().updateSignedUser(repository.getUserFromSharedPrefs());
+                Log.d("DBG", "Splash Activity onCreate: user found; " + ModelSingleton.getInstance().getSignedUser().toString());
+                startActivity(intent);
+
+            } else {
+
+                Log.d("DBG", "Splash Activity onCreate: user not found");
+
+                repository.requestSessionId(new VolleyCallback() {
+                    @Override
+                    public void onSuccess(JSONObject response) {
+                        try {
+                            String sessionId = response.get("session_id").toString();
+                            goToMapActivityWithSessionId(sessionId);
+                        } catch (JSONException e) {
+                            Log.d("DBG", "onSuccess: " + e);
+                        }
                     }
-                }
 
-                @Override
-                public void onError(VolleyError volleyError) {
-                    Log.d("DBG", "onError: " + volleyError);
-                }
-            });
+                    @Override
+                    public void onError(VolleyError volleyError) {
+                        Log.d("DBG", "onError: " + volleyError);
+                    }
+                });
+            }
         }
+    }
+
+    public void goToMapActivityWithSessionId(String sessionId) {
+
+        ModelSingleton.getInstance().getSignedUser().setSessionId(sessionId);
+        SplashActivity.this.startActivity(intent);
+        finish();
+
     }
 }

@@ -29,4 +29,5 @@
     <string name="life_points_lost">Hai perso %s punti vita</string>
     <string name="xp_points_gained">Hai guadagnato %s punti esperienza!</string>
     <string name="ranking_title">Classifica</string>
+    <string name="test_session_id"></string>
 </resources>
