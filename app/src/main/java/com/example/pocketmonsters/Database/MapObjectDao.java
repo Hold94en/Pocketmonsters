@@ -4,6 +4,7 @@ import com.example.pocketmonsters.Model.MapObject;
 
 import java.util.List;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -14,6 +15,9 @@ import androidx.room.Update;
 public interface MapObjectDao {
     @Query("SELECT * FROM map_objects_table")
     List<MapObject> getMapObjects();
+
+    @Query("SELECT * FROM map_objects_table")
+    LiveData<List<MapObject>> getAllMapObjecs();
 
     @Insert
     void insertAll(List<MapObject> mapObjects);

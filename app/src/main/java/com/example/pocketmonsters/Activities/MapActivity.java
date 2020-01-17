@@ -75,6 +75,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        TAG = "DBG";
+
         // Mapbox access token
         Mapbox.getInstance(this, getString(R.string.map_box_access_token));
         setContentView(R.layout.activity_map);
@@ -86,7 +88,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // Data
         repository = Repository.getInstance(this);
-        TAG = "DBG";
+
 
         // UI
         cardViewHud = findViewById(R.id.hud);

@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
+
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.pocketmonsters.Model.MapObject;
 import com.example.pocketmonsters.Model.ModelSingleton;
@@ -32,6 +34,8 @@ public class Repository {
     private SharedPreferences sharedPreferences;
     private VolleySingleton volleySingleton;
     private MapObjectDao mapObjectDao;
+
+    private LiveData<List<MapObject>> mapObjectsLiveData;
 
     private static Repository instance;
 
@@ -95,6 +99,10 @@ public class Repository {
         new GetAllObjectsAsyncTask(mapObjectDao, asyncTaskCallback).execute();
     }
 
+    public void GetLiveDataMapObjectsFromDb() {
+        new GetAllMapObjectsLiveDataAsyncTask(mapObjectDao).execute();
+    }
+
     public void insertMapObject(MapObject mapObject) {
         new InsertMapObjectAsyncTask(mapObjectDao).execute(mapObject);
     }
@@ -124,6 +132,19 @@ public class Repository {
         @Override
         protected void onPostExecute(List<MapObject> mapObjects) {
             asyncTaskCallback.onPostExecution(mapObjects);
+        }
+    }
+
+    public static class GetAllMapObjectsLiveDataAsyncTask extends AsyncTask<Void, Void, LiveData<List<MapObject>>> {
+        private MapObjectDao mapObjectDao;
+
+        private GetAllMapObjectsLiveDataAsyncTask(MapObjectDao mapObjectDao) {
+            this.mapObjectDao = mapObjectDao;
+        }
+
+        @Override
+        protected LiveData<List<MapObject>> doInBackground(Void... voids) {
+            return mapObjectDao.getAllMapObjecs();
         }
     }
 
