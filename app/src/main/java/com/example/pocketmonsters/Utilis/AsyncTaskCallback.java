@@ -1,0 +1,11 @@
+package com.example.pocketmonsters.Utilis;
+
+import com.example.pocketmonsters.Model.MapObject;
+
+import java.util.List;
+
+public interface AsyncTaskCallback {
+
+    void onPostExecution(List<MapObject> mapObjects);
+
+}

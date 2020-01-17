@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Pocketmonsters</string>
+    <string name="location_permission_explanation">Pocketmonsters ha bisogno di accedere alla tua posizione per mostrarti gli oggetti nelle tue vicinanze</string>
+    <string name="location_permission_not_granted">Non hai autorizzato l\'utilizzo della posizione.</string>
+    <string name="map_box_access_token">pk.eyJ1IjoiaG9sZDk0ZW4iLCJhIjoiY2s0MnV4dW93MDA1bTNlcGF3czF4aGs2NyJ9.RbmaEWVBkiO-Mh5qznRwuw</string>
+    <string name="action_fight">Combatti</string>
+    <string name="action_eat">Mangia</string>
+    <string name="fight_title">Combattimento</string>
+    <string name="user_name_default">Tu</string>
+    <string name="user_name_anonym">Anonimo</string>
+    <string name="life_points">Punti vita: %d</string>
+    <string name="life_points_short">%d LP</string>
+    <string name="exp_points">Punti esperienza: %d</string>
+    <string name="object_type">Tipo %s</string>
+    <string name="object_size">Categoria: %s</string>
+    <string name="type_monster">Mostro</string>
+    <string name="type_candy">Caramella</string>
+    <string name="size_large">grande</string>
+    <string name="size_medium">media</string>
+    <string name="size_small">piccola</string>
+    <string name="vs">VS</string>
+    <string name="action_close">Chiudi</string>
+    <string name="action_profile">Vai al profilo</string>
+    <string name="action_ranking">Vai alla classifica</string>
+    <string name="action_map">Torna alla mappa</string>
+    <string name="fight_result_win">Hai sconfitto il mostro!</string>
+    <string name="fight_result_dead">Sei morto!</string>
+    <string name="profile_title">Il tuo profilo</string>
+    <string name="life_points_lost">Hai perso %s punti vita</string>
+    <string name="xp_points_gained">Hai guadagnato %s punti esperienza!</string>
+    <string name="ranking_title">Classifica</string>
+</resources>
