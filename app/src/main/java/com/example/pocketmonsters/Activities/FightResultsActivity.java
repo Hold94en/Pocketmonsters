@@ -183,7 +183,7 @@ public class FightResultsActivity extends AppCompatActivity {
             if (jsonObject.getBoolean("died")) {
                 ModelSingleton.getInstance().getSignedUser().resetLifePoints();
             } else {
-                // TODO remove object only when I'll know how to remove symbol
+                // TODO handle objects with liveData
                 ModelSingleton.getInstance().getSignedUser().setLifePoints(jsonObject.getInt("lp"));
                 ModelSingleton.getInstance().getSignedUser().setExpPoints(jsonObject.getInt("xp"));
                 ModelSingleton.getInstance().removeMapObjectWithId(monster.getId());
