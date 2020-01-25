@@ -2,19 +2,25 @@ package com.example.pocketmonsters.Model;
 
 import android.util.Log;
 
+import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Stack;
 
 public class ModelSingleton {
 
     private static ModelSingleton instance = null;
 
-    private List<MapObject> mapObjects;
+    private List<Symbol> mapSymbols;
     private SignedUser signedUser;
+    private Stack<Symbol> symbolsToRemove;
 
     private ModelSingleton() {
-        mapObjects = new ArrayList<>();
+        mapSymbols = new ArrayList<>();
         signedUser = new SignedUser();
+        symbolsToRemove = new Stack<>();
     }
 
     public static synchronized ModelSingleton getInstance() {
@@ -33,29 +39,44 @@ public class ModelSingleton {
         return signedUser;
     }
 
-    public void setMapObjects(List<MapObject> mapObjects) {
-        this.mapObjects = mapObjects;
+    public List<Symbol> getMapSymbols() {
+        return mapSymbols;
     }
 
-    public List<MapObject> getMapObjects() {
-        return mapObjects;
-    }
+    public Symbol getMapSymbolWithId(int id) {
 
-    public MapObject getMapObjectWithId(int id) {
-
-        for (int i = 0; i < mapObjects.size(); i++) {
-            if (mapObjects.get(i).getId() == id)
-                return  mapObjects.get(i);
+        for (int i = 0; i < mapSymbols.size(); i++) {
+            if (mapSymbols.get(i).getId() == id)
+                return mapSymbols.get(i);
         }
 
         return  null;
     }
 
-    public void removeMapObjectWithId(int id) {
-        for (int i = 0; i < mapObjects.size(); i++) {
-            if (mapObjects.get(i).getId() == id) {
-                mapObjects.remove(mapObjects.get(i));
+    public int getMonsterSymbolsCount() {
+
+        int count = 0;
+
+        for (int i = 0; i < mapSymbols.size(); i++) {
+            if (Objects.requireNonNull(mapSymbols.get(i).getData()).getAsJsonObject().get("type").getAsString().equals("MO")) {
+                count++;
             }
         }
+
+
+        return count;
+    }
+
+    public void removeSymbolWithId(int id) {
+        for (int i = 0; i < mapSymbols.size(); i++) {
+            if (Objects.requireNonNull(mapSymbols.get(i).getData()).getAsJsonObject().get("id").getAsInt() == id) {
+                symbolsToRemove.push(mapSymbols.get(i));
+                mapSymbols.remove(mapSymbols.get(i));
+            }
+        }
+    }
+
+    public Stack<Symbol> getSymbolsToRemove() {
+        return symbolsToRemove;
     }
 }

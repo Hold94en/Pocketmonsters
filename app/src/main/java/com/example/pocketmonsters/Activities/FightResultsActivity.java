@@ -13,6 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
+import com.example.pocketmonsters.Utilis.AsyncTaskCallback;
 import com.example.pocketmonsters.Utilis.ImageUtilities;
 import com.example.pocketmonsters.Model.MapObject;
 import com.example.pocketmonsters.Model.ModelSingleton;
@@ -24,6 +25,8 @@ import com.example.pocketmonsters.Utilis.VolleySingleton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -66,7 +69,53 @@ public class FightResultsActivity extends AppCompatActivity {
         user = ModelSingleton.getInstance().getSignedUser();
         userLp = user.getLifePoints();
         userXp = user.getExpPoints();
-        monster = ModelSingleton.getInstance().getMapObjectWithId(getIntent().getIntExtra("mapObjectId",0));
+        int mapObjectId = getIntent().getIntExtra("mapObjectId",0);
+
+        repository.getMapObjectFromDb(mapObjectId, new AsyncTaskCallback() {
+            @Override
+            public void onPostExecution(MapObject mapObject) {
+                monster = mapObject;
+
+                // monster
+                mapObjectImageView.setImageBitmap(ImageUtilities.getBitmapFromString(monster.getBase64Image()));
+                mapObjectNameTextView.setText(monster.getName());
+                mapObjectLpTextView.setText(getString(R.string.life_points, 100));
+                String objectSize = monster.getSize();
+                switch (objectSize) {
+                    case "L": mapObjectSizeTextView.setText(getString(R.string.object_size, getString(R.string.size_large)));
+                        break;
+                    case "M": mapObjectSizeTextView.setText(getString(R.string.object_size, getString(R.string.size_medium)));
+                        break;
+                    case "S": mapObjectSizeTextView.setText(getString(R.string.object_size, getString(R.string.size_small)));
+                        break;
+                    default: mapObjectSizeTextView.setText(getString(R.string.object_size));
+                }
+
+                Drawable draw = getDrawable(R.drawable.progress_bar);
+                progressBar.setProgressDrawable(draw);
+
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Wait half a second
+                        Log.d("DBG", "before fight: " + user.toString());
+                        progressBar.setVisibility(View.INVISIBLE);
+                        startFight();
+                    }
+                }, 500);
+            }
+
+            @Override
+            public void onPostExecution(List<MapObject> mapObjects) {
+
+            }
+
+            @Override
+            public void onPostExecution(Integer integer) {
+
+            }
+        });
 
         // UI
         userImageView = findViewById(R.id.img_user);
@@ -104,21 +153,6 @@ public class FightResultsActivity extends AppCompatActivity {
         userLpTextView.setText(getString(R.string.life_points, user.getLifePoints()));
         userXpTextView.setText(getString(R.string.exp_points, user.getExpPoints()));
 
-        // monster
-        mapObjectImageView.setImageBitmap(ImageUtilities.getBitmapFromString(monster.getBase64Image()));
-        mapObjectNameTextView.setText(monster.getName());
-        mapObjectLpTextView.setText(getString(R.string.life_points, 100));
-        String objectSize = monster.getSize();
-        switch (objectSize) {
-            case "L": mapObjectSizeTextView.setText(getString(R.string.object_size, getString(R.string.size_large)));
-                break;
-            case "M": mapObjectSizeTextView.setText(getString(R.string.object_size, getString(R.string.size_medium)));
-                break;
-            case "S": mapObjectSizeTextView.setText(getString(R.string.object_size, getString(R.string.size_small)));
-                break;
-            default: mapObjectSizeTextView.setText(getString(R.string.object_size));
-        }
-
 
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,21 +177,6 @@ public class FightResultsActivity extends AppCompatActivity {
                 FightResultsActivity.this.finish();
             }
         });
-
-
-        Drawable draw = getDrawable(R.drawable.progress_bar);
-        progressBar.setProgressDrawable(draw);
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //Wait 1 second
-                Log.d("DBG", "before fight: " + user.toString());
-                progressBar.setVisibility(View.INVISIBLE);
-                startFight();
-            }
-        }, 1000);
     }
 
 
@@ -181,13 +200,18 @@ public class FightResultsActivity extends AppCompatActivity {
     public void updateModel(JSONObject jsonObject) {
         try {
             if (jsonObject.getBoolean("died")) {
-                ModelSingleton.getInstance().getSignedUser().resetLifePoints();
+                ModelSingleton.getInstance().getSignedUser().resetUserStats();
+                /*
+                ModelSingleton.getInstance().getMapSymbols().clear();
+                ModelSingleton.getInstance().getSymbolsToRemove().clear();
+                repository.killAllMapObjects();
+                 */
             } else {
-                // TODO handle objects with liveData
                 ModelSingleton.getInstance().getSignedUser().setLifePoints(jsonObject.getInt("lp"));
                 ModelSingleton.getInstance().getSignedUser().setExpPoints(jsonObject.getInt("xp"));
-                ModelSingleton.getInstance().removeMapObjectWithId(monster.getId());
-                repository.deleteMapObject(monster);
+                ModelSingleton.getInstance().removeSymbolWithId(monster.getId());
+                monster.setAlive(false);
+                repository.updateMapObject(monster);
             }
 
         } catch (JSONException e) {
@@ -208,7 +232,9 @@ public class FightResultsActivity extends AppCompatActivity {
         try {
             if (jsonObject.getBoolean("died")) {
                 fightStatusTextView.setText(getString(R.string.fight_result_dead));
+                fightLpResultTextView.setText(R.string.fight_explanation_death);
                 userLpTextView.setText(getString(R.string.life_points, 0));
+                userXpTextView.setText(getString(R.string.life_points, 0));
             } else {
                 fightStatusTextView.setText(getString(R.string.fight_result_win));
                 int lpLost = userLp - ModelSingleton.getInstance().getSignedUser().getLifePoints();

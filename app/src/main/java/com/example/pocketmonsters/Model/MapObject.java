@@ -27,6 +27,8 @@ public class MapObject implements Parcelable {
     private String name;
     @ColumnInfo
     private String base64Image;
+    @ColumnInfo
+    private boolean alive;
 
     public MapObject(int id, double lat, double lon, String type, String size, String name) {
         this.id = id;
@@ -35,6 +37,7 @@ public class MapObject implements Parcelable {
         this.type = type;
         this.size = size;
         this.name = name;
+        this.alive = true;
     }
 
     public double getLat() {
@@ -65,6 +68,10 @@ public class MapObject implements Parcelable {
         return base64Image;
     }
 
+    public boolean isAlive() {
+        return alive;
+    }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -91,6 +98,10 @@ public class MapObject implements Parcelable {
 
     public void setBase64Image(String base64Image) {
         this.base64Image = base64Image;
+    }
+
+    public void setAlive(boolean alive) {
+        this.alive = alive;
     }
 
     @NonNull

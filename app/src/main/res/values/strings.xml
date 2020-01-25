@@ -25,9 +25,14 @@
     <string name="action_map">Torna alla mappa</string>
     <string name="fight_result_win">Hai sconfitto il mostro!</string>
     <string name="fight_result_dead">Sei morto!</string>
+    <string name="fight_explanation_death">Verranno ripristinati i tuoi Life Points ma perdi tutta l\'esperienza acquisita</string>
     <string name="profile_title">Il tuo profilo</string>
     <string name="life_points_lost">Hai perso %s punti vita</string>
     <string name="xp_points_gained">Hai guadagnato %s punti esperienza!</string>
     <string name="ranking_title">Classifica</string>
+    <string name="edits_saved">Modifiche salvate</string>
+    <string name="warning_short_username">Scegli un nome utente di almeno 3 caratteri</string>
+    <string name="warning_image">Immagine non supportata</string>
+    <string name="warning_generic">Si è verificato un problema. Riprova più tardi.</string>
     <string name="test_session_id"></string>
 </resources>

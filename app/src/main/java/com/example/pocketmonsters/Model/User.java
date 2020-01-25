@@ -60,8 +60,9 @@ public class User {
         return base64Image;
     }
 
-    public void resetLifePoints() {
+    public void resetUserStats() {
         this.lifePoints = 100;
+        this.expPoints = 0;
     }
 
     @NonNull

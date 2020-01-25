@@ -6,6 +6,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
+import androidx.lifecycle.Observer;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -53,6 +54,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, PermissionsListener, WelcomeDialog.WelcomeDialogListener, MapObjectBottomSheet.BottomSheetListener {
@@ -76,6 +78,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
 
         TAG = "DBG";
+
+        Log.d(TAG, "MapActivity onCreate: ");
 
         // Mapbox access token
         Mapbox.getInstance(this, getString(R.string.map_box_access_token));
@@ -122,30 +126,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 Log.d(TAG, "onStyleLoaded: map is ready");
 
-                repository.getMapObjectsFromDb(new AsyncTaskCallback() {
-                    @Override
-                    public void onPostExecution(List<MapObject> list) {
-                        if (list.size() == 0) {
-                            Log.d(TAG, "onPostExecution: objects not found");
-                            repository.requestMap(new VolleyCallback() {
-                                @Override
-                                public void onSuccess(JSONObject response) {
-                                    parseRequestMapResponse(response);
-                                }
-
-                                @Override
-                                public void onError(VolleyError volleyError) {
-                                    Log.d(TAG, "onError: " + volleyError);
-                                }
-                            });
-                        } else {
-                            Log.d(TAG, "onPostExecution: " + list.size() + " objects found");
-                            ModelSingleton.getInstance().setMapObjects(list);
-                            addSymbolsToMap(list);
-                        }
-                    }
-                });
-
                 // Set up objects layer
                 Drawable drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_android_24dp, null);
                 Bitmap mapObjectImage = BitmapUtils.getBitmapFromDrawable(drawable);
@@ -162,68 +142,132 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     @Override
                     public void onAnnotationClick(Symbol symbol) {
                         // show bottom sheet
-                        if(mapObjectBottomSheet == null || !mapObjectBottomSheet.isVisible())
+                        if (mapObjectBottomSheet == null || !mapObjectBottomSheet.isVisible())
                             showObjectDetail(symbol);
+                    }
+                });
+
+                repository.getMapObjectsFromDb(new AsyncTaskCallback() {
+                    @Override
+                    public void onPostExecution(List<MapObject> list) {
+                        if (list.size() == 0) {
+                            Log.d(TAG, "onPostExecution: objects not found in db");
+                            repository.requestMap(new VolleyCallback() {
+                                @Override
+                                public void onSuccess(JSONObject response) {
+                                    parseRequestMapResponse(response);
+                                }
+
+                                @Override
+                                public void onError(VolleyError volleyError) {
+                                    Log.d(TAG, "onError: " + volleyError);
+                                }
+                            });
+                        } else {
+                            Log.d(TAG, "onPostExecution: " + list.size() + " objects found");
+                            for (int i = 0; i < list.size(); i++) {
+                                if (list.get(i).isAlive())
+                                    addSymbolToMap(list.get(i));
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecution(MapObject mapObject) {
+
+                    }
+
+                    @Override
+                    public void onPostExecution(Integer integer) {
+
                     }
                 });
             }
         });
     }
 
-
     private void parseRequestMapResponse(JSONObject jsonObject) {
         try {
             JSONArray jsonArray = (JSONArray) jsonObject.get("mapobjects");
             for (int i = 0; i < jsonArray.length(); i++) {
+
                 final MapObject mapObject = new Gson().fromJson(jsonArray.get(i).toString(), MapObject.class);
-                repository.requestImage(new VolleyCallback() {
+
+                repository.getMapObjectFromDb(mapObject.getId(), new AsyncTaskCallback() {
                     @Override
-                    public void onSuccess(JSONObject response) {
-                        try {
-                            mapObject.setBase64Image(response.getString("img"));
-                            ModelSingleton.getInstance().getMapObjects().add(mapObject);
-                            repository.insertMapObject(mapObject);
-                            addSymbolToMap(mapObject);
-                        } catch (JSONException e){
-                            Log.d(TAG, "onSuccess: " + e);
+                    public void onPostExecution(MapObject dbMapObject) {
+                        if (dbMapObject != null) {
+                            // mapObject from server is already in room db
+                            if (!dbMapObject.isAlive()) {
+                                Log.d(TAG, "onPostExecution: dead object found in db");
+                                // update object position and resuscitate it, monster or candy
+                                dbMapObject.setAlive(true);
+                                dbMapObject.setLat(mapObject.getLat());
+                                dbMapObject.setLon(mapObject.getLon());
+                                repository.updateMapObject(dbMapObject);
+                                addSymbolToMap(dbMapObject);
+                            }
+                        } else {
+                            // get mapObject image and insert it into room db
+                            requestMapObjectImage(mapObject);
+                            Log.d(TAG, "onPostExecution: sto richiedendo l'immage di " + mapObject.getName());
                         }
                     }
 
                     @Override
-                    public void onError(VolleyError volleyError) {
-                        Log.d(TAG, "onError: " + volleyError);
+                    public void onPostExecution(List<MapObject> mapObjects) {
+
                     }
-                }, mapObject);
+
+                    @Override
+                    public void onPostExecution(Integer integer) {
+
+                    }
+                });
             }
         } catch (JSONException e) {
             Log.d(TAG, "parseRequestMapResponse: " + e);
         }
     }
 
-    private void addSymbolsToMap(List<MapObject> mapObjects) {
-        for (int i = 0; i < mapObjects.size(); i++) {
-            MapObject mapObject = mapObjects.get(i);
 
+    private void requestMapObjectImage(final MapObject mapObject) {
+        repository.requestImage(mapObject, new VolleyCallback() {
+            @Override
+            public void onSuccess(JSONObject response) {
+                try {
+                    mapObject.setBase64Image(response.getString("img"));
+                    mapObject.setAlive(true);
+                    repository.insertMapObject(mapObject);
+                    addSymbolToMap(mapObject);
+                } catch (JSONException e){
+                    Log.d(TAG, "onSuccess: " + e);
+                }
+            }
 
-            symbolManager.create(new SymbolOptions()
-                    .withLatLng(new LatLng(mapObject.getLat(), mapObject.getLon()))
-                    .withTextField(mapObject.getName())
-                    .withIconImage("object-image")
-                    .withData(new Gson().toJsonTree(mapObject, MapObject.class))
-                    .withIconSize(1.0f)
-            );
-        }
+            @Override
+            public void onError(VolleyError volleyError) {
+
+            }
+        });
     }
+
 
     private void addSymbolToMap(MapObject mapObject) {
 
-        symbolManager.create(new SymbolOptions()
+        Symbol symbol = symbolManager.create(new SymbolOptions()
                 .withLatLng(new LatLng(mapObject.getLat(), mapObject.getLon()))
                 .withTextField(mapObject.getName())
                 .withIconImage("object-image")
                 .withData(new Gson().toJsonTree(mapObject, MapObject.class))
                 .withIconSize(1.0f)
         );
+
+
+
+        ModelSingleton.getInstance().getMapSymbols().add(symbol);
+
+
     }
 
     private void showObjectDetail(Symbol symbol) {
@@ -284,9 +328,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     try {
                         Log.d(TAG, "onSuccess: "+ ModelSingleton.getInstance().getSignedUser().toString());
                         ModelSingleton.getInstance().getSignedUser().setLifePoints(response.getInt("lp"));
-                        ModelSingleton.getInstance().removeMapObjectWithId(mapObject.getId());
-                        repository.deleteMapObject(mapObject);
-                        // Update UI
+                        ModelSingleton.getInstance().removeSymbolWithId(mapObject.getId());
+                        mapObject.setAlive(false);
+                        repository.updateMapObject(mapObject);
                         textViewLifePoints.setText(getString(R.string.life_points_short, ModelSingleton.getInstance().getSignedUser().getLifePoints()));
                         updateSymbols();
                     } catch (JSONException e){
@@ -376,43 +420,48 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void updateSymbols() {
-
-        if (symbolManager != null) {
-
-            for (int i = 0; i < symbolManager.getAnnotations().size(); i++) {
-
-                Symbol symbol = symbolManager.getAnnotations().get(i);
-
-                if (symbol != null) {
-
-                    JsonElement data = symbol.getData();
-                    MapObject mapObject = new Gson().fromJson(data, MapObject.class);
-
-                    if (ModelSingleton.getInstance().getMapObjectWithId(mapObject.getId()) == null) {
-                        symbolManager.delete(symbol);
-                    }
-
-                } else {
-                    Log.d(TAG, "updateSymbols: found null symbol" + symbol);
-                }
-
-            }
-
+        if (!ModelSingleton.getInstance().getSymbolsToRemove().empty()) {
+            Symbol symbol = ModelSingleton.getInstance().getSymbolsToRemove().peek();
+            symbolManager.delete(symbol);
+            ModelSingleton.getInstance().getSymbolsToRemove().pop();
         }
 
+        if (ModelSingleton.getInstance().getMonsterSymbolsCount() == 0) {
+
+            repository.requestMap(new VolleyCallback() {
+                @Override
+                public void onSuccess(JSONObject response) {
+                    parseRequestMapResponse(response);
+                }
+
+                @Override
+                public void onError(VolleyError volleyError) {
+                    Log.d(TAG, "onError: " + volleyError);
+                }
+
+            });
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause: ");
         repository.saveUserToSharedPrefs(ModelSingleton.getInstance().getSignedUser());
+    }
+
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart: ");
+
+        updateSymbols();
     }
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume: ON RESUME!");
-
-        updateSymbols();
+        Log.d(TAG, "onResume: ");
 
         if (ModelSingleton.getInstance().getSignedUser().getBase64Image() != null) {
             userImageButton.setImageBitmap(ImageUtilities.getBitmapFromString(ModelSingleton.getInstance().getSignedUser().getBase64Image()));

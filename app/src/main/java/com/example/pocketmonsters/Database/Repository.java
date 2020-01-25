@@ -35,8 +35,6 @@ public class Repository {
     private VolleySingleton volleySingleton;
     private MapObjectDao mapObjectDao;
 
-    private LiveData<List<MapObject>> mapObjectsLiveData;
-
     private static Repository instance;
 
     private Repository(Context context) {
@@ -95,6 +93,78 @@ public class Repository {
         editor.apply();
     }
 
+    // ROOM
+
+    public void getMapObjectFromDb(int id, AsyncTaskCallback asyncTaskCallback) {
+        new GetMapObjectAsyncTask(id, mapObjectDao, asyncTaskCallback).execute();
+    }
+
+    public static class GetMapObjectAsyncTask extends AsyncTask<Void, Void, MapObject> {
+
+        private int target;
+        private AsyncTaskCallback asyncTaskCallback;
+        private MapObjectDao mapObjectDao;
+
+        private GetMapObjectAsyncTask(int target, MapObjectDao mapObjectDao, AsyncTaskCallback asyncTaskCallback) {
+            this.target = target;
+            this.asyncTaskCallback = asyncTaskCallback;
+            this.mapObjectDao = mapObjectDao;
+        }
+
+        @Override
+        protected MapObject doInBackground(Void... voids) {
+            return mapObjectDao.getMapObject(target);
+        }
+
+        @Override
+        protected void onPostExecute(MapObject mapObject) {
+            asyncTaskCallback.onPostExecution(mapObject);
+        }
+    }
+
+    public void updateMapObject(MapObject mapObject) {
+        new UpdateMapObjectAsyncTask(mapObjectDao).execute(mapObject);
+    }
+
+    public static class UpdateMapObjectAsyncTask extends AsyncTask<MapObject, Void, Void> {
+        private MapObjectDao mapObjectDao;
+
+        private UpdateMapObjectAsyncTask(MapObjectDao mapObjectDao) {
+            this.mapObjectDao = mapObjectDao;
+        }
+
+        @Override
+        protected Void doInBackground(MapObject... mapObjects) {
+            Log.d("DBG", "doInBackground: updating some object");
+            mapObjectDao.update(mapObjects[0]);
+            return null;
+        }
+    }
+
+    public void getMapObjectsCount(AsyncTaskCallback asyncTaskCallback) {
+        new GetMapObjectsCountAsyncTask(mapObjectDao, asyncTaskCallback).execute();
+    }
+
+    public static class GetMapObjectsCountAsyncTask extends AsyncTask<Void, Void, Integer> {
+        private MapObjectDao mapObjectDao;
+        private AsyncTaskCallback asyncTaskCallback;
+
+        private GetMapObjectsCountAsyncTask(MapObjectDao mapObjectDao, AsyncTaskCallback asyncTaskCallback) {
+            this.mapObjectDao = mapObjectDao;
+            this.asyncTaskCallback = asyncTaskCallback;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            return mapObjectDao.getRowCount();
+        }
+
+        @Override
+        protected void onPostExecute(Integer integer) {
+            asyncTaskCallback.onPostExecution(integer);
+        }
+    }
+
     public void getMapObjectsFromDb(AsyncTaskCallback asyncTaskCallback) {
         new GetAllObjectsAsyncTask(mapObjectDao, asyncTaskCallback).execute();
     }
@@ -113,6 +183,24 @@ public class Repository {
 
     public void deleteMapObject(MapObject mapObject) {
         new DeleteMapObjectAsyncTask(mapObjectDao).execute(mapObject);
+    }
+
+    public void killAllMapObjects() {
+        new KillAllMapObjectsAsyncTask(mapObjectDao).execute();
+    }
+
+    private static class KillAllMapObjectsAsyncTask extends AsyncTask<Void, Void, Void> {
+        private MapObjectDao mapObjectDao;
+
+        private KillAllMapObjectsAsyncTask(MapObjectDao mapObjectDao) {
+            this.mapObjectDao = mapObjectDao;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            mapObjectDao.setAllMapObjectsLifeTo(false);
+            return null;
+        }
     }
 
     private static class GetAllObjectsAsyncTask extends AsyncTask<Void, Void, List<MapObject>> {
@@ -228,7 +316,7 @@ public class Repository {
     }
 
 
-    public void requestImage(VolleyCallback volleyCallback, final MapObject mapObject) {
+    public void requestImage(final MapObject mapObject, VolleyCallback volleyCallback) {
 
         JSONObject jsonObject = new JSONObject();
         try {

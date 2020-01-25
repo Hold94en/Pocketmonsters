@@ -10,9 +10,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.pocketmonsters.Database.Repository;
 import com.example.pocketmonsters.Model.MapObject;
 import com.example.pocketmonsters.Model.ModelSingleton;
 import com.example.pocketmonsters.R;
+import com.example.pocketmonsters.Utilis.AsyncTaskCallback;
 import com.example.pocketmonsters.Utilis.ImageUtilities;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
@@ -51,34 +53,49 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
         final boolean canInteract = bundle.getBoolean("canInteract");
         final int mapObjectId = bundle.getInt("mapObjectId");
 
-        mapObject = ModelSingleton.getInstance().getMapObjectWithId(mapObjectId);
+        Repository.getInstance(getContext()).getMapObjectFromDb(mapObjectId, new AsyncTaskCallback() {
+            @Override
+            public void onPostExecution(final MapObject mapObject) {
 
-        textViewObjectName.setText(mapObject.getName());
-        imageView.setImageBitmap(ImageUtilities.getBitmapFromString(mapObject.getBase64Image()));
+                textViewObjectName.setText(mapObject.getName());
+                imageView.setImageBitmap(ImageUtilities.getBitmapFromString(mapObject.getBase64Image()));
 
-        String objectSize = mapObject.getSize();
+                String objectSize = mapObject.getSize();
 
-        switch (objectSize) {
-            case "L": textViewObjectSize.setText(getString(R.string.object_size, getString(R.string.size_large)));
-            break;
-            case "M": textViewObjectSize.setText(getString(R.string.object_size, getString(R.string.size_medium)));
-            break;
-            case "S": textViewObjectSize.setText(getString(R.string.object_size, getString(R.string.size_small)));
-            break;
-            default: textViewObjectSize.setText(getString(R.string.object_size));
-        }
+                switch (objectSize) {
+                    case "L": textViewObjectSize.setText(getString(R.string.object_size, getString(R.string.size_large)));
+                        break;
+                    case "M": textViewObjectSize.setText(getString(R.string.object_size, getString(R.string.size_medium)));
+                        break;
+                    case "S": textViewObjectSize.setText(getString(R.string.object_size, getString(R.string.size_small)));
+                        break;
+                    default: textViewObjectSize.setText(getString(R.string.object_size));
+                }
 
-        buttonMainAction.setEnabled(canInteract);
-        if (mapObject.getType().equals("MO"))
-            buttonMainAction.setText(R.string.action_fight);
-        else if (mapObject.getType().equals("CA"))
-            buttonMainAction.setText(R.string.action_eat);
+                buttonMainAction.setEnabled(canInteract);
+                if (mapObject.getType().equals("MO"))
+                    buttonMainAction.setText(R.string.action_fight);
+                else if (mapObject.getType().equals("CA"))
+                    buttonMainAction.setText(R.string.action_eat);
 
-        buttonMainAction.setOnClickListener(new View.OnClickListener() {
+                buttonMainAction.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        bottomSheetListener.onFightEatButtonClick(mapObject, imageView);
+                    }
+                });
+
+            }
 
             @Override
-            public void onClick(View v) {
-                bottomSheetListener.onFightEatButtonClick(mapObject, imageView);
+            public void onPostExecution(List<MapObject> mapObjects) {
+
+            }
+
+            @Override
+            public void onPostExecution(Integer integer) {
+
             }
         });
     }

@@ -84,8 +84,10 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
         buttonClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*
                 Intent intent = new Intent(ProfileActivity.this, MapActivity.class);
                 ProfileActivity.this.startActivity(intent);
+                 */
                 ProfileActivity.this.finish();
             }
         });
@@ -118,14 +120,14 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
         if (username.length() > 2)
             userNameTextView.setText(username);
         else
-            Snackbar.make(findViewById(R.id.layout_profile), "Nome utente troppo corto! Inserisci almeno 3 caratteri", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.layout_profile), R.string.warning_short_username, Snackbar.LENGTH_SHORT).show();
     }
 
     public void updateUserImageView(Bitmap bitmap) {
         if (bitmap != null)
             userImageView.setImageBitmap(bitmap);
         else
-            Snackbar.make(findViewById(R.id.layout_profile), "Immagine non supportata", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.layout_profile), R.string.warning_image, Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -135,7 +137,7 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
             Repository.getInstance(ProfileActivity.this).sendUserData(new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject response) {
-                    Snackbar.make(findViewById(R.id.layout_profile), "Modifiche effettuate", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(findViewById(R.id.layout_profile), R.string.edits_saved, Snackbar.LENGTH_SHORT).show();
 
                     if (username.length() > 0) {
                         ModelSingleton.getInstance().getSignedUser().setUsername(username);
@@ -148,7 +150,7 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
 
                 @Override
                 public void onError(VolleyError volleyError) {
-                    Snackbar.make(findViewById(R.id.layout_profile), "Si è verificato un problema. Riprova più tardi.", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(findViewById(R.id.layout_profile), R.string.warning_generic, Snackbar.LENGTH_SHORT).show();
                 }
             }, new String[]{username, base64image});
         }

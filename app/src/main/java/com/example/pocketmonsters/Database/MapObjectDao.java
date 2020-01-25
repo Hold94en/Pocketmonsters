@@ -19,6 +19,21 @@ public interface MapObjectDao {
     @Query("SELECT * FROM map_objects_table")
     LiveData<List<MapObject>> getAllMapObjecs();
 
+    @Query("UPDATE map_objects_table SET alive = :alive")
+    void setAllMapObjectsLifeTo(boolean alive);
+
+    @Query("SELECT * FROM map_objects_table WHERE id = :objectId")
+    MapObject getMapObject(int objectId);
+
+    @Query("SELECT COUNT(id) FROM map_objects_table")
+    Integer getRowCount();
+
+    @Query("SELECT COUNT(id) FROM map_objects_table WHERE type = 'MO'")
+    Integer getMonstersCount();
+
+    @Query("DELETE FROM map_objects_table WHERE type = 'MO'")
+    void deleteAllMonsters();
+
     @Insert
     void insertAll(List<MapObject> mapObjects);
 
