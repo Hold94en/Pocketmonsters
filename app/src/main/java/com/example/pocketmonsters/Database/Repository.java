@@ -61,6 +61,7 @@ public class Repository {
         SignedUser usr = new SignedUser(sharedPreferences.getString("session_id", ""));
         usr.setLifePoints(sharedPreferences.getInt("life_points", 100));
         usr.setExpPoints(sharedPreferences.getInt("exp_points", 100));
+        usr.setFirstRun(sharedPreferences.getBoolean("first_run", true));
 
         if (sharedPreferences.contains("user_name")) {
             usr.setUsername(
@@ -81,6 +82,7 @@ public class Repository {
         editor.putString("session_id", user.getSessionId());
         editor.putInt("life_points", user.getLifePoints());
         editor.putInt("exp_points", user.getExpPoints());
+        editor.putBoolean("first_run", user.isFirstRun());
 
         if (user.getUsername() != null) {
             editor.putString("user_name", user.getUsername());

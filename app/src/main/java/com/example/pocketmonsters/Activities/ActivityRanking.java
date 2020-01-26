@@ -5,12 +5,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.example.pocketmonsters.R;
 import com.example.pocketmonsters.Database.Repository;
 import com.example.pocketmonsters.Model.User;
 import com.example.pocketmonsters.Utilis.VolleyCallback;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,10 +48,6 @@ public class ActivityRanking extends AppCompatActivity {
         mapActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                Intent intent = new Intent(ActivityRanking.this, MapActivity.class);
-                ActivityRanking.this.startActivity(intent);
-                 */
                 ActivityRanking.this.finish();
             }
         });
@@ -62,7 +60,7 @@ public class ActivityRanking extends AppCompatActivity {
 
             @Override
             public void onError(VolleyError volleyError) {
-
+                Toast.makeText(getApplicationContext(), R.string.warning_generic, Toast.LENGTH_SHORT).show();
             }
         });
     }

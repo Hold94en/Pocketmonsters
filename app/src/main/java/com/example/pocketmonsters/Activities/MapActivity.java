@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,11 +28,15 @@ import com.example.pocketmonsters.Model.ModelSingleton;
 import com.example.pocketmonsters.R;
 import com.example.pocketmonsters.Database.Repository;
 import com.example.pocketmonsters.Utilis.VolleyCallback;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationComponent;
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
@@ -46,6 +51,7 @@ import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
+import com.mapbox.mapboxsdk.style.layers.Property;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.utils.BitmapUtils;
@@ -57,7 +63,7 @@ import org.json.JSONObject;
 import java.util.Collections;
 import java.util.List;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, PermissionsListener, WelcomeDialog.WelcomeDialogListener, MapObjectBottomSheet.BottomSheetListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, PermissionsListener, MapObjectBottomSheet.BottomSheetListener {
     private String TAG;
     private Repository repository;
 
@@ -68,10 +74,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private SymbolManager symbolManager;
     private MapObjectBottomSheet mapObjectBottomSheet;
     private CardView cardViewHud;
+    private FloatingActionButton fabUserLocation;
 
     private ImageButton userImageButton;
 
     private TextView textViewLifePoints;
+
+    private Style mapStyle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,10 +102,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Data
         repository = Repository.getInstance(this);
 
-
         // UI
         cardViewHud = findViewById(R.id.hud);
         userImageButton = findViewById(R.id.img_button_user);
+        fabUserLocation = findViewById(R.id.fab_user_location);
 
         if (ModelSingleton.getInstance().getSignedUser().getBase64Image() != null) {
             userImageButton.setImageBitmap(ImageUtilities.getBitmapFromString(ModelSingleton.getInstance().getSignedUser().getBase64Image()));
@@ -110,8 +119,37 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         });
 
+        fabUserLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (PermissionsManager.areLocationPermissionsGranted(getApplicationContext())) {
+                    if (locationComponent.getLastKnownLocation() != null) {
+
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(new LatLng(locationComponent.getLastKnownLocation()))
+                                .zoom(14)
+                                .build();
+                        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 500);
+                    } else {
+                        Snackbar.make(findViewById(R.id.coordinator_layout), R.string.turn_on_location, Snackbar.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Snackbar.make(findViewById(R.id.coordinator_layout), R.string.location_permission_not_granted, Snackbar.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
+
         textViewLifePoints = findViewById(R.id.txt_lp_short);
         textViewLifePoints.setText(getString(R.string.life_points_short, ModelSingleton.getInstance().getSignedUser().getLifePoints()));
+
+        if (ModelSingleton.getInstance().getSignedUser().isFirstRun()) {
+
+            openWelcomeDialog();
+
+        }
 
     }
 
@@ -119,25 +157,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
-        mapboxMap.setStyle(Style.LIGHT, new Style.OnStyleLoaded() {
+        mapboxMap.setStyle(Style.OUTDOORS, new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
                 enableLocationComponent(style);
 
+                mapStyle = style;
+
                 Log.d(TAG, "onStyleLoaded: map is ready");
 
-                // Set up objects layer
-                Drawable drawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_android_24dp, null);
-                Bitmap mapObjectImage = BitmapUtils.getBitmapFromDrawable(drawable);
-                style.addImage("object-image", mapObjectImage);
 
-                SymbolLayer objectsLayer = new SymbolLayer("objects-layer", "");
-                objectsLayer.setProperties(PropertyFactory.iconImage("object-image"));
-                style.addLayer(objectsLayer);
+
+                // Set up objects layer
+                Drawable candyDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cake_24dp, null);
+                Drawable monsterDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_android_24dp, null);
+                style.addImage("monster-image", monsterDrawable);
+                style.addImage("candy-image", candyDrawable);
 
                 symbolManager = new SymbolManager(mapView, mapboxMap, style);
-                symbolManager.setIconAllowOverlap(true);
-                symbolManager.setIconIgnorePlacement(true);
+                symbolManager.setIconAllowOverlap(false);
+                symbolManager.setIconIgnorePlacement(false);
                 symbolManager.addClickListener(new OnSymbolClickListener() {
                     @Override
                     public void onAnnotationClick(Symbol symbol) {
@@ -236,6 +275,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(JSONObject response) {
                 try {
+                    mapStyle.addImage(mapObject.getName(), ImageUtilities.getBitmapFromString(response.getString("img")));
                     mapObject.setBase64Image(response.getString("img"));
                     mapObject.setAlive(true);
                     repository.insertMapObject(mapObject);
@@ -255,18 +295,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void addSymbolToMap(MapObject mapObject) {
 
+        String iconImage;
+        Float iconSize = 1.0f;
+
+
+        if (mapObject.getType().equals("MO"))
+            iconImage = "monster-image";
+        else
+            iconImage = "candy-image";
+
+
         Symbol symbol = symbolManager.create(new SymbolOptions()
                 .withLatLng(new LatLng(mapObject.getLat(), mapObject.getLon()))
-                .withTextField(mapObject.getName())
-                .withIconImage("object-image")
+                .withIconImage(iconImage)
                 .withData(new Gson().toJsonTree(mapObject, MapObject.class))
-                .withIconSize(1.0f)
+                .withIconSize(iconSize)
         );
 
-
-
         ModelSingleton.getInstance().getMapSymbols().add(symbol);
-
 
     }
 
@@ -284,17 +330,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 boolean canInteract;
 
-                try {
-                    lastKnownLocation.setLatitude(locationComponent.getLastKnownLocation().getLatitude());
-                    lastKnownLocation.setLongitude(locationComponent.getLastKnownLocation().getLongitude());
-                    canInteract = (ModelSingleton.getInstance().getSignedUser().canInteract(lastKnownLocation, mapObject));
-                    bundle.putBoolean("canInteract", canInteract);
-                } catch (Exception e) {
-                    Log.d(TAG, "onAnnotationClick: " + e);
-                    bundle.putBoolean("canInteract", false);
+                if (PermissionsManager.areLocationPermissionsGranted(getApplicationContext())) {
 
-                    Toast.makeText(MapActivity.this,
-                            "Attiva la localizzazione per giocare!", Toast.LENGTH_SHORT).show();
+                    if (locationComponent.getLastKnownLocation() != null) {
+
+                        lastKnownLocation.setLatitude(locationComponent.getLastKnownLocation().getLatitude());
+                        lastKnownLocation.setLongitude(locationComponent.getLastKnownLocation().getLongitude());
+                        canInteract = (ModelSingleton.getInstance().getSignedUser().canInteract(lastKnownLocation, mapObject));
+                        bundle.putBoolean("canInteract", canInteract);
+
+                    } else {
+                        Toast.makeText(MapActivity.this,
+                                R.string.turn_on_location, Toast.LENGTH_SHORT).show();
+                    }
                 }
 
                 bundle.putInt("mapObjectId", mapObject.getId());
@@ -352,8 +400,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void openWelcomeDialog() {
 
-        WelcomeDialog welcomeDialog = new WelcomeDialog();
+        WelcomeDialog welcomeDialog = new WelcomeDialog(this);
+        welcomeDialog.setCancelable(false);
         welcomeDialog.show(getSupportFragmentManager(), "firstRunDialog");
+        ModelSingleton.getInstance().getSignedUser().setFirstRun(false);
 
     }
 
@@ -405,18 +455,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (granted) {
             enableLocationComponent(mapboxMap.getStyle());
         } else {
-            Toast.makeText(this, R.string.location_permission_not_granted, Toast.LENGTH_LONG).show();
+            Snackbar.make(findViewById(R.id.coordinator_layout), R.string.location_permission_explanation, Snackbar.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onExplanationNeeded(List<String> permissionsToExplain) {
-        Toast.makeText(this, R.string.location_permission_explanation, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onUsernameEntered(String username) {
-        ModelSingleton.getInstance().getSignedUser().setUsername(username);
     }
 
     public void updateSymbols() {
@@ -455,8 +499,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG, "onRestart: ");
-
         updateSymbols();
+        //enableLocationComponent(mapStyle);
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.example.pocketmonsters.Activities;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -42,7 +44,13 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.activity_profile, null);
+        setContentView(view);
+
+        String layoutTag = view.getTag().toString();
+
+        Log.d("DBG", "onCreate: " + layoutTag);
 
         User user = ModelSingleton.getInstance().getSignedUser();
 
@@ -54,7 +62,13 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
         userLpTextView = findViewById(R.id.txt_user_lp);
         userXpTextView = findViewById(R.id.txt_user_xp);
         buttonRankings = findViewById(R.id.btn_rankings);
-        editProfileButton.setVisibility(View.VISIBLE);
+
+        if (layoutTag.equals("normal")) {
+            editProfileButton.setVisibility(View.VISIBLE);
+        } else {
+            editProfileButton.setVisibility(View.INVISIBLE);
+            toggleFragment(new FragmentEditProfile(), false, "edit_profile_fragment", false);
+        }
 
         if (user.getUsername() != null)
             userNameTextView.setText(user.getUsername());
@@ -69,7 +83,7 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
         editProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleFragment(new FragmentEditProfile(), false, "edit_profile_fragment");
+                toggleFragment(new FragmentEditProfile(), false, "edit_profile_fragment", true);
             }
         });
 
@@ -94,24 +108,34 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
 
     }
 
-    public void toggleFragment(Fragment fragment, boolean addToBackStack, String tag) {
+    public void toggleFragment(Fragment fragment, boolean addToBackStack, String tag, boolean animations) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setCustomAnimations(R.anim.slide_from_top, R.anim.slide_to_top);
+        if (animations)
+            fragmentTransaction.setCustomAnimations(R.anim.slide_from_top, R.anim.slide_to_top);
 
         FragmentEditProfile myFragment = (FragmentEditProfile) getSupportFragmentManager().findFragmentByTag(tag);
         if (myFragment == null) {
             fragmentTransaction.replace(R.id.fragment_container, fragment, tag);
             fragmentTransaction.commitAllowingStateLoss();
 
-            buttonRankings.animate().alpha(0.0f).setDuration(100);
-            buttonClose.animate().alpha(0.0f).setDuration(100);
+            if (animations) {
+                buttonRankings.setEnabled(false);
+                buttonClose.setEnabled(false);
+                buttonRankings.animate().alpha(0.0f).setDuration(100);
+                buttonClose.animate().alpha(0.0f).setDuration(100);
+            }
+
 
         } else {
             fragmentTransaction.remove(myFragment).commit();
 
-            buttonRankings.animate().alpha(1.0f).setDuration(100);
-            buttonClose.animate().alpha(1.0f).setDuration(100);
+            if (animations) {
+                buttonRankings.setEnabled(true);
+                buttonClose.setEnabled(true);
+                buttonRankings.animate().alpha(1.0f).setDuration(100);
+                buttonClose.animate().alpha(1.0f).setDuration(100);
+            }
         }
 
     }

@@ -1,18 +1,20 @@
 <resources>
     <string name="app_name">Pocketmonsters</string>
-    <string name="location_permission_explanation">Pocketmonsters ha bisogno di accedere alla tua posizione per mostrarti gli oggetti nelle tue vicinanze</string>
+    <string name="location_permission_explanation">Pocketmonsters ha bisogno di accedere alla tua posizione per funzionare.</string>
     <string name="location_permission_not_granted">Non hai autorizzato l\'utilizzo della posizione.</string>
     <string name="map_box_access_token">pk.eyJ1IjoiaG9sZDk0ZW4iLCJhIjoiY2s0MnV4dW93MDA1bTNlcGF3czF4aGs2NyJ9.RbmaEWVBkiO-Mh5qznRwuw</string>
     <string name="action_fight">Combatti</string>
     <string name="action_eat">Mangia</string>
+    <string name="action_challenge">Sfida i tuoi amici</string>
     <string name="fight_title">Combattimento</string>
     <string name="user_name_default">Tu</string>
     <string name="user_name_anonym">Anonimo</string>
     <string name="life_points">Punti vita: %d</string>
     <string name="life_points_short">%d LP</string>
+    <string name="exp_points_short">%d XP</string>
     <string name="exp_points">Punti esperienza: %d</string>
     <string name="object_type">Tipo %s</string>
-    <string name="object_size">Categoria: %s</string>
+    <string name="object_size">Dimensione: %s</string>
     <string name="type_monster">Mostro</string>
     <string name="type_candy">Caramella</string>
     <string name="size_large">grande</string>
@@ -25,7 +27,7 @@
     <string name="action_map">Torna alla mappa</string>
     <string name="fight_result_win">Hai sconfitto il mostro!</string>
     <string name="fight_result_dead">Sei morto!</string>
-    <string name="fight_explanation_death">Verranno ripristinati i tuoi Life Points ma perdi tutta l\'esperienza acquisita</string>
+    <string name="fight_explanation_death">Tornerai in vita con 100 LP ma perdi tutti i punti esperienza acquisiti sin\'ora</string>
     <string name="profile_title">Il tuo profilo</string>
     <string name="life_points_lost">Hai perso %s punti vita</string>
     <string name="xp_points_gained">Hai guadagnato %s punti esperienza!</string>
@@ -34,5 +36,21 @@
     <string name="warning_short_username">Scegli un nome utente di almeno 3 caratteri</string>
     <string name="warning_image">Immagine non supportata</string>
     <string name="warning_generic">Si è verificato un problema. Riprova più tardi.</string>
+    <string name="customize">Personalizza</string>
+    <string name="user_name">Nome utente</string>
+    <string name="user_image">Immagine del profilo</string>
+    <string name="action_save_edits">Salva modifiche</string>
+    <string name="welcome_title">Benvenuto!</string>
+    <string name="welcome_fight_title">Combatti</string>
+    <string name="welcome_fight_explanation_1">Trova e sconfiggi i mostri nelle tue vicinanze.</string>
+    <string name="welcome_fight_explanation_2">Attento però alla loro dimensione! Più grandi sono più sarà difficile sconfiggerli.</string>
+    <string name="welcome_eat_title">Rifornimento</string>
+    <string name="welcome_eat_explanation_1">Tieni d\'occhio i tuoi Punti Vita! </string>
+    <string name="welcome_eat_explanation_2">Dopo un combattimento puoi recuperare i preziosi Punti Vita (LP) persi mangiando le caramelle sparse per la città.</string>
+    <string name="welcome_rankings_title">Gioca in compagnia</string>
+    <string name="welcome_rankings_explanation_1">Guadagna Punti Esperienza sconfiggendo i mostri e scala le classifiche.</string>
+    <string name="welcome_rankings_explanation_2">Pronto a sfidare i tuoi amici?</string>
+    <string name="turn_on_location">Attiva la geolocalizzazione per giocare</string>
+    <string name="too_far">Peccato, sei troppo lontano! Avvicinati all\'oggetto per interagire</string>
     <string name="test_session_id"></string>
 </resources>

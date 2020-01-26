@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.example.pocketmonsters.Utilis.AsyncTaskCallback;
@@ -191,7 +192,7 @@ public class FightResultsActivity extends AppCompatActivity {
 
             @Override
             public void onError(VolleyError volleyError) {
-
+                Toast.makeText(getApplicationContext(), R.string.warning_generic, Toast.LENGTH_SHORT).show();
             }
         }, monster.getId());
     }
@@ -234,7 +235,7 @@ public class FightResultsActivity extends AppCompatActivity {
                 fightStatusTextView.setText(getString(R.string.fight_result_dead));
                 fightLpResultTextView.setText(R.string.fight_explanation_death);
                 userLpTextView.setText(getString(R.string.life_points, 0));
-                userXpTextView.setText(getString(R.string.life_points, 0));
+                userXpTextView.setText(getString(R.string.exp_points, 0));
             } else {
                 fightStatusTextView.setText(getString(R.string.fight_result_win));
                 int lpLost = userLp - ModelSingleton.getInstance().getSignedUser().getLifePoints();

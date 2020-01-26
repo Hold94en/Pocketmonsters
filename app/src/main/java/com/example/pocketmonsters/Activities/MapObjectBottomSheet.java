@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.pocketmonsters.Database.Repository;
 import com.example.pocketmonsters.Model.MapObject;
@@ -50,7 +51,8 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
 
         // Logic
         final Bundle bundle = getArguments();
-        final boolean canInteract = bundle.getBoolean("canInteract");
+
+        final boolean canInteract = bundle.getBoolean("canInteract", false);
         final int mapObjectId = bundle.getInt("mapObjectId");
 
         Repository.getInstance(getContext()).getMapObjectFromDb(mapObjectId, new AsyncTaskCallback() {
@@ -73,6 +75,10 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
                 }
 
                 buttonMainAction.setEnabled(canInteract);
+
+                if (!canInteract)
+                    Toast.makeText(getContext(), R.string.too_far, Toast.LENGTH_SHORT).show();
+
                 if (mapObject.getType().equals("MO"))
                     buttonMainAction.setText(R.string.action_fight);
                 else if (mapObject.getType().equals("CA"))

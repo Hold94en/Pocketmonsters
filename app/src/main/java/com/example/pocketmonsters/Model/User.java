@@ -14,9 +14,12 @@ public class User {
 
     private String base64Image;
 
+    private boolean firstRun;
+
     public User() {
         this.lifePoints = 100;
         this.expPoints = 0;
+        this.firstRun = true;
     }
 
     public User(int lifePoints, int expPoints, String username, String base64Image) {
@@ -44,6 +47,10 @@ public class User {
         this.base64Image = base64Image;
     }
 
+    public void setFirstRun(boolean firstRun) {
+        this.firstRun = firstRun;
+    }
+
     public int getLifePoints() {
         return lifePoints;
     }
@@ -60,6 +67,10 @@ public class User {
         return base64Image;
     }
 
+    public boolean isFirstRun() {
+        return firstRun;
+    }
+
     public void resetUserStats() {
         this.lifePoints = 100;
         this.expPoints = 0;
@@ -73,12 +84,8 @@ public class User {
 
     public boolean canInteract(LatLng lastKnownLocation, MapObject mapObject) {
         LatLng objectLatLng = new LatLng(mapObject.getLat(), mapObject.getLon());
-        /*
-        if (lastKnownLocation.distanceTo(objectLatLng) < 50.0)
-            return true;
-        else
-            return false;
-        */
+
+        //return (lastKnownLocation.distanceTo(objectLatLng) < 50.0);
         return true;
     }
 }
