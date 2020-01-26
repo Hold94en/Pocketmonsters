@@ -166,8 +166,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 Log.d(TAG, "onStyleLoaded: map is ready");
 
-
-
                 // Set up objects layer
                 Drawable candyDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cake_24dp, null);
                 Drawable monsterDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_android_24dp, null);
@@ -467,6 +465,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (!ModelSingleton.getInstance().getSymbolsToRemove().empty()) {
             Symbol symbol = ModelSingleton.getInstance().getSymbolsToRemove().peek();
             symbolManager.delete(symbol);
+            symbolManager.updateSource();
             ModelSingleton.getInstance().getSymbolsToRemove().pop();
         }
 
@@ -500,7 +499,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onRestart();
         Log.d(TAG, "onRestart: ");
         updateSymbols();
-        //enableLocationComponent(mapStyle);
+        enableLocationComponent(mapStyle);
     }
 
     @Override
