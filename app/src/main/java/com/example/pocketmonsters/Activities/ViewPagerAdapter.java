@@ -1,17 +1,13 @@
 package com.example.pocketmonsters.Activities;
 
 import android.content.Context;
-import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.pocketmonsters.Model.User;
 import com.example.pocketmonsters.R;
-
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,7 +16,7 @@ public class ViewPagerAdapter  extends RecyclerView.Adapter<ViewPagerAdapter.Pag
 
     private Context context;
 
-    public static class PagerViewHolder extends RecyclerView.ViewHolder {
+    static class PagerViewHolder extends RecyclerView.ViewHolder {
 
         private TextView titleTextView;
         private ImageView imageView;
@@ -28,7 +24,7 @@ public class ViewPagerAdapter  extends RecyclerView.Adapter<ViewPagerAdapter.Pag
         private TextView secondExplanationTextView;
 
 
-        public PagerViewHolder(@NonNull View itemView) {
+        PagerViewHolder(@NonNull View itemView) {
             super(itemView);
 
             titleTextView = itemView.findViewById(R.id.txt_action_title);
@@ -38,8 +34,7 @@ public class ViewPagerAdapter  extends RecyclerView.Adapter<ViewPagerAdapter.Pag
         }
     }
 
-    public ViewPagerAdapter() {
-
+    ViewPagerAdapter() {
     }
 
     @NonNull
@@ -47,8 +42,7 @@ public class ViewPagerAdapter  extends RecyclerView.Adapter<ViewPagerAdapter.Pag
     public ViewPagerAdapter.PagerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         context = parent.getContext();
         View v = LayoutInflater.from(context).inflate(R.layout.item_welcome_dialog, parent, false);
-        ViewPagerAdapter.PagerViewHolder pagerViewHolder = new ViewPagerAdapter.PagerViewHolder(v);
-        return pagerViewHolder;
+        return new ViewPagerAdapter.PagerViewHolder(v);
     }
 
     @Override

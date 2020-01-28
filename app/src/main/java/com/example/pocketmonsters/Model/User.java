@@ -1,7 +1,6 @@
 package com.example.pocketmonsters.Model;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
-
 import androidx.annotation.NonNull;
 
 public class User {
@@ -16,7 +15,7 @@ public class User {
 
     private boolean firstRun;
 
-    public User() {
+    User() {
         this.lifePoints = 100;
         this.expPoints = 0;
         this.firstRun = true;

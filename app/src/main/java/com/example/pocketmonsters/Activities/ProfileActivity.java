@@ -3,11 +3,8 @@ package com.example.pocketmonsters.Activities;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,12 +29,8 @@ import androidx.fragment.app.FragmentTransaction;
 public class ProfileActivity extends AppCompatActivity implements FragmentEditProfile.FragmentEditProfileListener {
 
     //UI
-    private TextView profileTitle;
-    private Button editProfileButton;
     private ImageView userImageView;
     private TextView userNameTextView;
-    private TextView userLpTextView;
-    private TextView userXpTextView;
     private Button buttonClose;
     private Button buttonRankings;
 
@@ -48,20 +41,20 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
         View view = inflater.inflate(R.layout.activity_profile, null);
         setContentView(view);
 
-        String layoutTag = view.getTag().toString();
-
-        Log.d("DBG", "onCreate: " + layoutTag);
-
-        User user = ModelSingleton.getInstance().getSignedUser();
-
-        profileTitle = findViewById(R.id.txt_profile_title);
-        editProfileButton = findViewById(R.id.btn_edit_profile);
+        // UI
+        TextView profileTitle = findViewById(R.id.txt_profile_title);
+        TextView userLpTextView = findViewById(R.id.txt_user_lp);
+        TextView userXpTextView = findViewById(R.id.txt_user_xp);
+        Button editProfileButton = findViewById(R.id.btn_edit_profile);
         buttonClose = findViewById(R.id.btn_close);
         userNameTextView = findViewById(R.id.txt_user_name);
         userImageView = findViewById(R.id.img_user);
-        userLpTextView = findViewById(R.id.txt_user_lp);
-        userXpTextView = findViewById(R.id.txt_user_xp);
+
         buttonRankings = findViewById(R.id.btn_rankings);
+
+        // Logic
+        String layoutTag = view.getTag().toString();
+        User user = ModelSingleton.getInstance().getSignedUser();
 
         if (layoutTag.equals("normal")) {
             editProfileButton.setVisibility(View.VISIBLE);
@@ -98,10 +91,6 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
         buttonClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                Intent intent = new Intent(ProfileActivity.this, MapActivity.class);
-                ProfileActivity.this.startActivity(intent);
-                 */
                 ProfileActivity.this.finish();
             }
         });
@@ -111,6 +100,7 @@ public class ProfileActivity extends AppCompatActivity implements FragmentEditPr
     public void toggleFragment(Fragment fragment, boolean addToBackStack, String tag, boolean animations) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
         if (animations)
             fragmentTransaction.setCustomAnimations(R.anim.slide_from_top, R.anim.slide_to_top);
 

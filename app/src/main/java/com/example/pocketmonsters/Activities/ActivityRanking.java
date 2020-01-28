@@ -1,6 +1,5 @@
 package com.example.pocketmonsters.Activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,7 +11,6 @@ import com.example.pocketmonsters.R;
 import com.example.pocketmonsters.Database.Repository;
 import com.example.pocketmonsters.Model.User;
 import com.example.pocketmonsters.Utilis.VolleyCallback;
-import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,21 +28,21 @@ public class ActivityRanking extends AppCompatActivity {
 
     private List<User> users;
     private RecyclerView recyclerView;
-    private RecyclerView.Adapter adapter;
-    private RecyclerView.LayoutManager layoutManager;
-    private Button mapActivityButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ranking);
 
-        users = new ArrayList<>();
+        // UI
+        setContentView(R.layout.activity_ranking);
         recyclerView = findViewById(R.id.recycler_view_rankig);
-        layoutManager = new LinearLayoutManager(this);
+        Button mapActivityButton = findViewById(R.id.btn_close);
+
+        // Logic
+        users = new ArrayList<>();
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        mapActivityButton = findViewById(R.id.btn_close);
         mapActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,7 +69,6 @@ public class ActivityRanking extends AppCompatActivity {
 
             JSONArray jsonArray = (JSONArray) jsonObject.get("ranking");
             for (int i = 0; i < jsonArray.length(); i ++) {
-                //User user = new Gson().fromJson(jsonArray.get(i).toString(), User.class);
                 JSONObject jsonUser = (JSONObject) jsonArray.get(i);
                 User user = new User(jsonUser.getInt("lp"),
                         jsonUser.getInt("xp"),
@@ -82,8 +79,8 @@ public class ActivityRanking extends AppCompatActivity {
                 users.add(user);
             }
 
-            adapter = new UserAdapter(users);
-            recyclerView.setAdapter(adapter);
+            UserAdapter userAdapter = new UserAdapter(users);
+            recyclerView.setAdapter(userAdapter);
 
         } catch (JSONException e) {
             Log.d("DBG", "parseRequestRankingResponse: " + e);

@@ -35,13 +35,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class FightResultsActivity extends AppCompatActivity {
     // Data
-    private MapObject monster;
-    private User user;
+    private ModelSingleton modelSingleton;
+    private Repository repository;
+    private MapObject mapObject;
     private int userLp;
     private int userXp;
 
     // UI
-    private Handler handler;
     private ImageView userImageView;
     private TextView usernameTextView;
     private TextView userLpTextView;
@@ -57,31 +57,57 @@ public class FightResultsActivity extends AppCompatActivity {
     private Button closeButton;
     private Button profileButton;
     private Button rankingsButton;
-    private Button editProfileButton;
 
-    private Repository repository;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fight_results);
 
+        // UI
+        userImageView = findViewById(R.id.img_user);
+        usernameTextView = findViewById(R.id.txt_user_name);
+        userLpTextView = findViewById(R.id.txt_user_lp);
+        userXpTextView = findViewById(R.id.txt_user_xp);
+        mapObjectImageView = findViewById(R.id.img_map_object);
+        mapObjectNameTextView = findViewById(R.id.txt_map_object_name);
+        mapObjectLpTextView = findViewById(R.id.txt_map_object_lp);
+        mapObjectSizeTextView = findViewById(R.id.txt_map_object_size);
+        fightStatusTextView = findViewById(R.id.txt_fight_status);
+        fightLpResultTextView = findViewById(R.id.txt_lp_result);
+        fightXpResultTextView = findViewById(R.id.txt_xp_result);
+        closeButton = findViewById(R.id.btn_close);
+        profileButton = findViewById(R.id.btn_profile);
+        rankingsButton = findViewById(R.id.btn_rankings);
+        progressBar = findViewById(R.id.progressBar);
+
+        Button editProfileButton = findViewById(R.id.btn_edit_profile);
+        editProfileButton.setVisibility(View.GONE);
+
+        userLpTextView.setSelected(true);
+        userXpTextView.setSelected(true);
+        mapObjectSizeTextView.setSelected(true);
+        mapObjectLpTextView.setSelected(true);
+
         // Data
         repository = Repository.getInstance(this);
-        user = ModelSingleton.getInstance().getSignedUser();
+        modelSingleton = ModelSingleton.getInstance();
+        User user = modelSingleton.getSignedUser();
         userLp = user.getLifePoints();
         userXp = user.getExpPoints();
-        int mapObjectId = getIntent().getIntExtra("mapObjectId",0);
+
+        final int mapObjectId = getIntent().getIntExtra("mapObjectId",0);
 
         repository.getMapObjectFromDb(mapObjectId, new AsyncTaskCallback() {
             @Override
-            public void onPostExecution(MapObject mapObject) {
-                monster = mapObject;
+            public void onPostExecution(MapObject dbMapObject) {
+                mapObject = dbMapObject;
 
-                // monster
-                mapObjectImageView.setImageBitmap(ImageUtilities.getBitmapFromString(monster.getBase64Image()));
-                mapObjectNameTextView.setText(monster.getName());
+                // mapObject UI
+                mapObjectImageView.setImageBitmap(ImageUtilities.getBitmapFromString(mapObject.getBase64Image()));
+                mapObjectNameTextView.setText(mapObject.getName());
                 mapObjectLpTextView.setText(getString(R.string.life_points, 100));
-                String objectSize = monster.getSize();
+                String objectSize = mapObject.getSize();
+
                 switch (objectSize) {
                     case "L": mapObjectSizeTextView.setText(getString(R.string.object_size, getString(R.string.size_large)));
                         break;
@@ -100,7 +126,6 @@ public class FightResultsActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         //Wait half a second
-                        Log.d("DBG", "before fight: " + user.toString());
                         progressBar.setVisibility(View.INVISIBLE);
                         startFight();
                     }
@@ -111,38 +136,9 @@ public class FightResultsActivity extends AppCompatActivity {
             public void onPostExecution(List<MapObject> mapObjects) {
 
             }
-
-            @Override
-            public void onPostExecution(Integer integer) {
-
-            }
         });
 
-        // UI
-        userImageView = findViewById(R.id.img_user);
-        usernameTextView = findViewById(R.id.txt_user_name);
-        userLpTextView = findViewById(R.id.txt_user_lp);
-        userXpTextView = findViewById(R.id.txt_user_xp);
-        mapObjectImageView = findViewById(R.id.img_map_object);
-        mapObjectNameTextView = findViewById(R.id.txt_map_object_name);
-        mapObjectLpTextView = findViewById(R.id.txt_map_object_lp);
-        mapObjectSizeTextView = findViewById(R.id.txt_map_object_size);
-        fightStatusTextView = findViewById(R.id.txt_fight_status);
-        fightLpResultTextView = findViewById(R.id.txt_lp_result);
-        fightXpResultTextView = findViewById(R.id.txt_xp_result);
-        closeButton = findViewById(R.id.btn_close);
-        profileButton = findViewById(R.id.btn_profile);
-        rankingsButton = findViewById(R.id.btn_rankings);
-        progressBar = findViewById(R.id.progressBar);
-        editProfileButton = findViewById(R.id.btn_edit_profile);
-        editProfileButton.setVisibility(View.GONE);
-
-        userLpTextView.setSelected(true);
-        userXpTextView.setSelected(true);
-        mapObjectSizeTextView.setSelected(true);
-        mapObjectLpTextView.setSelected(true);
-
-        // user
+        // user UI
         if (user.getBase64Image() != null) {
             userImageView.setImageBitmap(ImageUtilities.getBitmapFromString(user.getBase64Image()));
         }
@@ -154,7 +150,7 @@ public class FightResultsActivity extends AppCompatActivity {
         userLpTextView.setText(getString(R.string.life_points, user.getLifePoints()));
         userXpTextView.setText(getString(R.string.exp_points, user.getExpPoints()));
 
-
+        // Logic
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -180,8 +176,6 @@ public class FightResultsActivity extends AppCompatActivity {
         });
     }
 
-
-
     public void startFight() {
         repository.requestFightEatResults(new VolleyCallback() {
             @Override
@@ -194,25 +188,20 @@ public class FightResultsActivity extends AppCompatActivity {
             public void onError(VolleyError volleyError) {
                 Toast.makeText(getApplicationContext(), R.string.warning_generic, Toast.LENGTH_SHORT).show();
             }
-        }, monster.getId());
+        }, mapObject.getId());
     }
 
 
     public void updateModel(JSONObject jsonObject) {
         try {
             if (jsonObject.getBoolean("died")) {
-                ModelSingleton.getInstance().getSignedUser().resetUserStats();
-                /*
-                ModelSingleton.getInstance().getMapSymbols().clear();
-                ModelSingleton.getInstance().getSymbolsToRemove().clear();
-                repository.killAllMapObjects();
-                 */
+                modelSingleton.getSignedUser().resetUserStats();
             } else {
-                ModelSingleton.getInstance().getSignedUser().setLifePoints(jsonObject.getInt("lp"));
-                ModelSingleton.getInstance().getSignedUser().setExpPoints(jsonObject.getInt("xp"));
-                ModelSingleton.getInstance().removeSymbolWithId(monster.getId());
-                monster.setAlive(false);
-                repository.updateMapObject(monster);
+                modelSingleton.getSignedUser().setLifePoints(jsonObject.getInt("lp"));
+                modelSingleton.getSignedUser().setExpPoints(jsonObject.getInt("xp"));
+                modelSingleton.removeSymbolWithId(mapObject.getId());
+                mapObject.setAlive(false);
+                repository.updateMapObject(mapObject);
             }
 
         } catch (JSONException e) {
@@ -228,15 +217,18 @@ public class FightResultsActivity extends AppCompatActivity {
         rankingsButton.setVisibility(View.VISIBLE);
         closeButton.setVisibility(View.VISIBLE);
 
-        Log.d("DBG", "after fight: " + ModelSingleton.getInstance().getSignedUser().toString());
+        Log.d("DBG", "after fight: " + modelSingleton.getSignedUser().toString());
 
         try {
             if (jsonObject.getBoolean("died")) {
+
                 fightStatusTextView.setText(getString(R.string.fight_result_dead));
-                fightLpResultTextView.setText(R.string.fight_explanation_death);
                 userLpTextView.setText(getString(R.string.life_points, 0));
                 userXpTextView.setText(getString(R.string.exp_points, 0));
+                fightLpResultTextView.setText(R.string.fight_explanation_death);
+
             } else {
+
                 fightStatusTextView.setText(getString(R.string.fight_result_win));
                 int lpLost = userLp - ModelSingleton.getInstance().getSignedUser().getLifePoints();
                 int xpGained =  ModelSingleton.getInstance().getSignedUser().getExpPoints() - userXp;
@@ -271,12 +263,12 @@ public class FightResultsActivity extends AppCompatActivity {
     }
 
     public void updateUserUi() {
-        if (ModelSingleton.getInstance().getSignedUser().getUsername() != null) {
-            usernameTextView.setText(ModelSingleton.getInstance().getSignedUser().getUsername());
+        if (modelSingleton.getSignedUser().getUsername() != null) {
+            usernameTextView.setText(modelSingleton.getSignedUser().getUsername());
         }
 
-        if (ModelSingleton.getInstance().getSignedUser().getBase64Image() != null)
-            userImageView.setImageBitmap(ImageUtilities.getBitmapFromString(ModelSingleton.getInstance().getSignedUser().getBase64Image()));
+        if (modelSingleton.getSignedUser().getBase64Image() != null)
+            userImageView.setImageBitmap(ImageUtilities.getBitmapFromString(modelSingleton.getSignedUser().getBase64Image()));
     }
 
     @Override
@@ -289,6 +281,6 @@ public class FightResultsActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         VolleySingleton.getInstance(this).getRequestQueue().cancelAll("volley");
-        repository.saveUserToSharedPrefs(ModelSingleton.getInstance().getSignedUser());
+        repository.saveUserToSharedPrefs(modelSingleton.getSignedUser());
     }
 }

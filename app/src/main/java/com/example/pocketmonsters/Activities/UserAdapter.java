@@ -22,14 +22,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private List<User> users;
     private Context context;
 
-    public static class UserViewHolder extends RecyclerView.ViewHolder {
+    static class UserViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView userImageView;
         private TextView usernameTextView;
         private TextView userLpTextView;
         private TextView userXpTextView;
 
-        public UserViewHolder(@NonNull View itemView) {
+        UserViewHolder(@NonNull View itemView) {
             super(itemView);
 
             userImageView = itemView.findViewById(R.id.img_user);
@@ -40,7 +40,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         }
     }
 
-    public UserAdapter(List<User> userList) {
+    UserAdapter(List<User> userList) {
         users = userList;
     }
 
@@ -49,8 +49,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         context = parent.getContext();
         View v = LayoutInflater.from(context).inflate(R.layout.card_user_ranking, parent, false);
-        UserViewHolder userViewHolder = new UserViewHolder(v);
-        return userViewHolder;
+        return new UserViewHolder(v);
     }
 
     @Override

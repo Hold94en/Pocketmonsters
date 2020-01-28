@@ -26,10 +26,9 @@ public class WelcomeDialog extends AppCompatDialogFragment {
 
     private Context context;
 
-    public WelcomeDialog(Context context) {
+    WelcomeDialog(Context context) {
         this.context = context;
     }
-
 
     @NonNull
     @Override
@@ -45,13 +44,13 @@ public class WelcomeDialog extends AppCompatDialogFragment {
         ViewPager2 viewPager2 = view.findViewById(R.id.viewPager2);
         TabLayout tabLayout = view.findViewById(R.id.tab_layout);
         viewPager2.setAdapter(new ViewPagerAdapter());
+
         new TabLayoutMediator(tabLayout, viewPager2,
                 new TabLayoutMediator.TabConfigurationStrategy() {
                     @Override public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
                         tab.setText(null);
                     }
                 }).attach();
-
 
         builder.setView(view).setPositiveButton("Inizia", null);
 

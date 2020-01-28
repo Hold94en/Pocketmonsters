@@ -45,5 +45,4 @@
         android:text="@string/action_eat"
         android:visibility="visible" />
 
-
 </LinearLayout>

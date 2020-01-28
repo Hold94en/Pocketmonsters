@@ -143,36 +143,8 @@ public class Repository {
         }
     }
 
-    public void getMapObjectsCount(AsyncTaskCallback asyncTaskCallback) {
-        new GetMapObjectsCountAsyncTask(mapObjectDao, asyncTaskCallback).execute();
-    }
-
-    public static class GetMapObjectsCountAsyncTask extends AsyncTask<Void, Void, Integer> {
-        private MapObjectDao mapObjectDao;
-        private AsyncTaskCallback asyncTaskCallback;
-
-        private GetMapObjectsCountAsyncTask(MapObjectDao mapObjectDao, AsyncTaskCallback asyncTaskCallback) {
-            this.mapObjectDao = mapObjectDao;
-            this.asyncTaskCallback = asyncTaskCallback;
-        }
-
-        @Override
-        protected Integer doInBackground(Void... voids) {
-            return mapObjectDao.getRowCount();
-        }
-
-        @Override
-        protected void onPostExecute(Integer integer) {
-            asyncTaskCallback.onPostExecution(integer);
-        }
-    }
-
     public void getMapObjectsFromDb(AsyncTaskCallback asyncTaskCallback) {
         new GetAllObjectsAsyncTask(mapObjectDao, asyncTaskCallback).execute();
-    }
-
-    public void GetLiveDataMapObjectsFromDb() {
-        new GetAllMapObjectsLiveDataAsyncTask(mapObjectDao).execute();
     }
 
     public void insertMapObject(MapObject mapObject) {
@@ -225,19 +197,6 @@ public class Repository {
         }
     }
 
-    public static class GetAllMapObjectsLiveDataAsyncTask extends AsyncTask<Void, Void, LiveData<List<MapObject>>> {
-        private MapObjectDao mapObjectDao;
-
-        private GetAllMapObjectsLiveDataAsyncTask(MapObjectDao mapObjectDao) {
-            this.mapObjectDao = mapObjectDao;
-        }
-
-        @Override
-        protected LiveData<List<MapObject>> doInBackground(Void... voids) {
-            return mapObjectDao.getAllMapObjecs();
-        }
-    }
-
     public static class InsertMapObjectsAsyncTask extends AsyncTask<List<MapObject>, Void, Void> {
         private MapObjectDao mapObjectDao;
 
@@ -282,17 +241,6 @@ public class Repository {
             return null;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
     // REMOTE

@@ -28,14 +28,10 @@ import androidx.fragment.app.Fragment;
 import static android.app.Activity.RESULT_OK;
 
 public class FragmentEditProfile extends Fragment {
-
     private static final int PICK_IMAGE = 1;
-
-    private Uri imageUri;
     private Bitmap bitmapImage;
     private FragmentEditProfileListener listener;
     private EditText usernameEditText;
-    private Button importImageButton;
     private Button saveEditsButton;
     private Boolean usernameSemaphore;
     private Boolean imageSemaphore;
@@ -46,20 +42,21 @@ public class FragmentEditProfile extends Fragment {
     public View onCreateView(@NonNull final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable final Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_edit_profile, container, false);
 
-        usernameEditText = v.findViewById(R.id.edit_username);
-        importImageButton = v.findViewById(R.id.btn_import_image);
+        // UI
+        Button importImageButton = v.findViewById(R.id.btn_import_image);
         saveEditsButton = v.findViewById(R.id.btn_save_edits);
+        usernameEditText = v.findViewById(R.id.edit_username);
 
-        profileActivity = (ProfileActivity)getActivity();
-
-        usernameSemaphore = null;
-        imageSemaphore = null;
+        // Logic
+        profileActivity = (ProfileActivity) getActivity();
+        usernameSemaphore = imageSemaphore = null;
 
         usernameEditText.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
 
                 if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
+
                     usernameSemaphore = false;
                     profileActivity.updateUserNameTextView(usernameEditText.getText().toString());
                     usernameSemaphore = (usernameEditText.getText().toString().length() > 2);
@@ -68,9 +65,6 @@ public class FragmentEditProfile extends Fragment {
                         saveEditsButton.setEnabled(usernameSemaphore);
                     else
                         saveEditsButton.setEnabled(usernameSemaphore && imageSemaphore);
-
-
-                    Log.d("DBG", "onActivityResult: usernameSemaphore" + usernameSemaphore);
                 }
                 return false;
             }
@@ -109,8 +103,10 @@ public class FragmentEditProfile extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         imageSemaphore = false;
+
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
-            imageUri = data.getData();
+
+            Uri imageUri = data.getData();
             try {
                 bitmapImage = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), imageUri);
                 if (bitmapImage != null) {
@@ -127,15 +123,11 @@ public class FragmentEditProfile extends Fragment {
                 else
                     saveEditsButton.setEnabled(usernameSemaphore && imageSemaphore);
 
-                Log.d("DBG", "onActivityResult imageSemaphore: " + imageSemaphore);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-
-
 
     @Override
     public void onAttach(@NonNull Context context) {

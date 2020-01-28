@@ -23,7 +23,6 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setTheme(R.style.SplashTheme);
         setContentView(R.layout.splash_screen);
 
         Repository repository = Repository.getInstance(this);

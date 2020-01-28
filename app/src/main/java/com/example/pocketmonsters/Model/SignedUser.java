@@ -6,7 +6,7 @@ public class SignedUser extends User {
 
     private String sessionId;
 
-    public SignedUser() {
+    SignedUser() {
         super();
     }
 

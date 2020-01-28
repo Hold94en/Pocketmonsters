@@ -8,6 +8,5 @@ public interface AsyncTaskCallback {
 
     void onPostExecution(MapObject mapObject);
     void onPostExecution(List<MapObject> mapObjects);
-    void onPostExecution(Integer integer);
 
 }

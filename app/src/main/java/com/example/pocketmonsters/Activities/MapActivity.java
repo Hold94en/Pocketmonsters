@@ -2,16 +2,10 @@ package com.example.pocketmonsters.Activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.res.ResourcesCompat;
-import androidx.core.view.ViewCompat;
-import androidx.lifecycle.Observer;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -51,44 +45,31 @@ import com.mapbox.mapboxsdk.plugins.annotation.OnSymbolClickListener;
 import com.mapbox.mapboxsdk.plugins.annotation.Symbol;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager;
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions;
-import com.mapbox.mapboxsdk.style.layers.Property;
-import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
-import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
-import com.mapbox.mapboxsdk.utils.BitmapUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Collections;
 import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, PermissionsListener, MapObjectBottomSheet.BottomSheetListener {
-    private String TAG;
     private Repository repository;
-
+    private ModelSingleton modelSingleton;
     private MapboxMap mapboxMap;
     private MapView mapView;
     private PermissionsManager permissionsManager;
     private LocationComponent locationComponent;
     private SymbolManager symbolManager;
     private MapObjectBottomSheet mapObjectBottomSheet;
-    private CardView cardViewHud;
-    private FloatingActionButton fabUserLocation;
-
     private ImageButton userImageButton;
-
     private TextView textViewLifePoints;
-
     private Style mapStyle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TAG = "DBG";
-
-        Log.d(TAG, "MapActivity onCreate: ");
+        Log.d("DBG", "MapActivity onCreate: ");
 
         // Mapbox access token
         Mapbox.getInstance(this, getString(R.string.map_box_access_token));
@@ -101,13 +82,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         // Data
         repository = Repository.getInstance(this);
+        modelSingleton = ModelSingleton.getInstance();
 
         // UI
-        cardViewHud = findViewById(R.id.hud);
+        FloatingActionButton fabUserLocation = findViewById(R.id.fab_user_location);
         userImageButton = findViewById(R.id.img_button_user);
-        fabUserLocation = findViewById(R.id.fab_user_location);
 
-        if (ModelSingleton.getInstance().getSignedUser().getBase64Image() != null) {
+        // Logic
+        textViewLifePoints = findViewById(R.id.txt_lp_short);
+        textViewLifePoints.setText(getString(R.string.life_points_short, ModelSingleton.getInstance().getSignedUser().getLifePoints()));
+
+        if (modelSingleton.getSignedUser().getBase64Image() != null) {
             userImageButton.setImageBitmap(ImageUtilities.getBitmapFromString(ModelSingleton.getInstance().getSignedUser().getBase64Image()));
         }
 
@@ -130,27 +115,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 .target(new LatLng(locationComponent.getLastKnownLocation()))
                                 .zoom(14)
                                 .build();
+
                         mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 500);
+
                     } else {
                         Snackbar.make(findViewById(R.id.coordinator_layout), R.string.turn_on_location, Snackbar.LENGTH_SHORT).show();
                     }
                 } else {
                     Snackbar.make(findViewById(R.id.coordinator_layout), R.string.location_permission_not_granted, Snackbar.LENGTH_SHORT).show();
                 }
-
-
             }
         });
-
-        textViewLifePoints = findViewById(R.id.txt_lp_short);
-        textViewLifePoints.setText(getString(R.string.life_points_short, ModelSingleton.getInstance().getSignedUser().getLifePoints()));
 
         if (ModelSingleton.getInstance().getSignedUser().isFirstRun()) {
 
             openWelcomeDialog();
 
         }
-
     }
 
 
@@ -164,13 +145,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 mapStyle = style;
 
-                Log.d(TAG, "onStyleLoaded: map is ready");
+                Log.d("DBG", "onStyleLoaded: map is ready");
 
-                // Set up objects layer
                 Drawable candyDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_cake_24dp, null);
                 Drawable monsterDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_android_24dp, null);
-                style.addImage("monster-image", monsterDrawable);
-                style.addImage("candy-image", candyDrawable);
+
+                style.addImage("candy-image", ImageUtilities.drawableToBitmap(candyDrawable));
+                style.addImage("monster-image", ImageUtilities.drawableToBitmap(monsterDrawable));
 
                 symbolManager = new SymbolManager(mapView, mapboxMap, style);
                 symbolManager.setIconAllowOverlap(false);
@@ -178,7 +159,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 symbolManager.addClickListener(new OnSymbolClickListener() {
                     @Override
                     public void onAnnotationClick(Symbol symbol) {
-                        // show bottom sheet
+                        // show bottom sheet if not already open
                         if (mapObjectBottomSheet == null || !mapObjectBottomSheet.isVisible())
                             showObjectDetail(symbol);
                     }
@@ -188,7 +169,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     @Override
                     public void onPostExecution(List<MapObject> list) {
                         if (list.size() == 0) {
-                            Log.d(TAG, "onPostExecution: objects not found in db");
+                            Log.d("DBG", "onPostExecution: objects not found in db");
                             repository.requestMap(new VolleyCallback() {
                                 @Override
                                 public void onSuccess(JSONObject response) {
@@ -197,11 +178,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                 @Override
                                 public void onError(VolleyError volleyError) {
-                                    Log.d(TAG, "onError: " + volleyError);
+                                    Log.d("DBG", "onError: " + volleyError);
                                 }
                             });
                         } else {
-                            Log.d(TAG, "onPostExecution: " + list.size() + " objects found");
+                            Log.d("DBG", "onPostExecution: " + list.size() + " objects found");
                             for (int i = 0; i < list.size(); i++) {
                                 if (list.get(i).isAlive())
                                     addSymbolToMap(list.get(i));
@@ -211,11 +192,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     @Override
                     public void onPostExecution(MapObject mapObject) {
-
-                    }
-
-                    @Override
-                    public void onPostExecution(Integer integer) {
 
                     }
                 });
@@ -236,7 +212,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         if (dbMapObject != null) {
                             // mapObject from server is already in room db
                             if (!dbMapObject.isAlive()) {
-                                Log.d(TAG, "onPostExecution: dead object found in db");
+                                Log.d("DBG", "onPostExecution: dead object found in db");
                                 // update object position and resuscitate it, monster or candy
                                 dbMapObject.setAlive(true);
                                 dbMapObject.setLat(mapObject.getLat());
@@ -247,7 +223,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         } else {
                             // get mapObject image and insert it into room db
                             requestMapObjectImage(mapObject);
-                            Log.d(TAG, "onPostExecution: sto richiedendo l'immage di " + mapObject.getName());
+                            Log.d("DBG", "onPostExecution: sto richiedendo l'immage di " + mapObject.getName());
                         }
                     }
 
@@ -255,15 +231,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onPostExecution(List<MapObject> mapObjects) {
 
                     }
-
-                    @Override
-                    public void onPostExecution(Integer integer) {
-
-                    }
                 });
             }
         } catch (JSONException e) {
-            Log.d(TAG, "parseRequestMapResponse: " + e);
+            Log.d("DBG", "parseRequestMapResponse: " + e);
         }
     }
 
@@ -279,7 +250,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     repository.insertMapObject(mapObject);
                     addSymbolToMap(mapObject);
                 } catch (JSONException e){
-                    Log.d(TAG, "onSuccess: " + e);
+                    Log.d("DBG", "onSuccess: " + e);
                 }
             }
 
@@ -360,9 +331,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onFightEatButtonClick(final MapObject mapObject, ImageView imageView) {
 
         if (mapObject.getType().equals("MO")) {
-            Log.d(TAG, "onFightEatButtonClick: cliccato su mostro");
-            ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat
-                    .makeSceneTransitionAnimation(this, imageView, ViewCompat.getTransitionName(imageView));
+            Log.d("DBG", "onFightEatButtonClick: cliccato su mostro");
             Intent intent = new Intent(this, FightResultsActivity.class);
             intent.putExtra("mapObjectId", mapObject.getId());
             startActivity(intent);
@@ -372,7 +341,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 @Override
                 public void onSuccess(JSONObject response) {
                     try {
-                        Log.d(TAG, "onSuccess: "+ ModelSingleton.getInstance().getSignedUser().toString());
+                        Log.d("DBG", "onSuccess: "+ ModelSingleton.getInstance().getSignedUser().toString());
                         ModelSingleton.getInstance().getSignedUser().setLifePoints(response.getInt("lp"));
                         ModelSingleton.getInstance().removeSymbolWithId(mapObject.getId());
                         mapObject.setAlive(false);
@@ -380,12 +349,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         textViewLifePoints.setText(getString(R.string.life_points_short, ModelSingleton.getInstance().getSignedUser().getLifePoints()));
                         updateSymbols();
                     } catch (JSONException e){
-                        Log.d(TAG, "requestFightEatResults: " + e);
+                        Log.d("DBG", "requestFightEatResults: " + e);
                     }
                 }
                 @Override
                 public void onError(VolleyError volleyError) {
-                    Log.d(TAG, "onError: " + volleyError);
+                    Log.d("DBG", "onError: " + volleyError);
                 }
             };
 
@@ -479,7 +448,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 @Override
                 public void onError(VolleyError volleyError) {
-                    Log.d(TAG, "onError: " + volleyError);
+                    Log.d("DBG", "onError: " + volleyError);
                 }
 
             });
@@ -489,7 +458,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause: ");
         repository.saveUserToSharedPrefs(ModelSingleton.getInstance().getSignedUser());
     }
 
@@ -497,16 +465,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d(TAG, "onRestart: ");
         updateSymbols();
         enableLocationComponent(mapStyle);
     }
 
     @Override
     protected void onResume() {
-        Log.d(TAG, "onResume: ");
 
-        if (ModelSingleton.getInstance().getSignedUser().getBase64Image() != null) {
+        if (modelSingleton.getSignedUser().getBase64Image() != null) {
             userImageButton.setImageBitmap(ImageUtilities.getBitmapFromString(ModelSingleton.getInstance().getSignedUser().getBase64Image()));
         }
 

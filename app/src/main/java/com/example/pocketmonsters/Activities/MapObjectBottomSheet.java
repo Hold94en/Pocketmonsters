@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import com.example.pocketmonsters.Database.Repository;
 import com.example.pocketmonsters.Model.MapObject;
-import com.example.pocketmonsters.Model.ModelSingleton;
 import com.example.pocketmonsters.R;
 import com.example.pocketmonsters.Utilis.AsyncTaskCallback;
 import com.example.pocketmonsters.Utilis.ImageUtilities;
@@ -32,10 +31,6 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
     private Button buttonMainAction;
     private ImageView imageView;
 
-    private List<MapObject> mapObjects;
-
-    private MapObject mapObject;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,14 +42,21 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
         super.onViewCreated(view, savedInstanceState);
 
         // UI
-        bindViews(view);
+        imageView = view.findViewById(R.id.img_map_object);
+        textViewObjectName = view.findViewById(R.id.txt_map_object_name);
+        textViewObjectSize = view.findViewById(R.id.txt_map_object_size);
+        buttonMainAction = view.findViewById(R.id.btn_fight_eat);
 
         // Logic
-        final Bundle bundle = getArguments();
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            boolean canInteract = bundle.getBoolean("canInteract", false);
+            int mapObjectId = bundle.getInt("mapObjectId");
+            setupBottomSheet(canInteract, mapObjectId);
+        }
+    }
 
-        final boolean canInteract = bundle.getBoolean("canInteract", false);
-        final int mapObjectId = bundle.getInt("mapObjectId");
-
+    private void setupBottomSheet(final boolean canInteract, final int mapObjectId) {
         Repository.getInstance(getContext()).getMapObjectFromDb(mapObjectId, new AsyncTaskCallback() {
             @Override
             public void onPostExecution(final MapObject mapObject) {
@@ -98,11 +100,6 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
             public void onPostExecution(List<MapObject> mapObjects) {
 
             }
-
-            @Override
-            public void onPostExecution(Integer integer) {
-
-            }
         });
     }
 
@@ -114,13 +111,6 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
         } catch (ClassCastException e) {
             Log.d("DBG", "onAttach: " + e);
         }
-    }
-
-    private void bindViews(View view) {
-        imageView = view.findViewById(R.id.img_map_object);
-        textViewObjectName = view.findViewById(R.id.txt_map_object_name);
-        textViewObjectSize = view.findViewById(R.id.txt_map_object_size);
-        buttonMainAction = view.findViewById(R.id.btn_fight_eat);
     }
 
     public interface BottomSheetListener {
