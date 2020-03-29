@@ -90,11 +90,11 @@ public class MapObjectBottomSheet extends BottomSheetDialogFragment {
                 if (distance > 1000) {
                     textViewObjectDistance.setText(getString(R.string.object_distance, (int)distance/1000, "km"));
                 } else {
-                    textViewObjectDistance.setText(getString(R.string.object_distance, distance, "m"));
+                    textViewObjectDistance.setText(getString(R.string.object_distance, (int)distance, "m"));
                 }
 
                 if (distance <= 50) {
-                    textViewObjectDistance.setTextColor(Color.GREEN);
+                    textViewHint.setVisibility(View.INVISIBLE);
                 }else {
                     textViewHint.setText(R.string.too_far);
                     textViewObjectDistance.setTextColor(Color.RED);
