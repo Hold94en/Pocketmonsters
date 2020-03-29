@@ -51,6 +51,7 @@
     <string name="welcome_rankings_explanation_1">Guadagna Punti Esperienza sconfiggendo i mostri e scala le classifiche.</string>
     <string name="welcome_rankings_explanation_2">Pronto a sfidare i tuoi amici?</string>
     <string name="turn_on_location">Attiva la geolocalizzazione per giocare</string>
-    <string name="too_far">Peccato, sei troppo lontano! Avvicinati all\'oggetto per interagire</string>
+    <string name="too_far">Avvicinati per interagire</string>
+    <string name="object_distance">Distanza: %d %s</string>
     <string name="test_session_id"></string>
 </resources>

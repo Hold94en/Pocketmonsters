@@ -82,9 +82,12 @@ public class User {
     }
 
     public boolean canInteract(LatLng lastKnownLocation, MapObject mapObject) {
-        LatLng objectLatLng = new LatLng(mapObject.getLat(), mapObject.getLon());
-
-        //return (lastKnownLocation.distanceTo(objectLatLng) < 50.0);
+        //return (distanceFrom(lastKnownLocation, mapObject) < 50.0);
         return true;
+    }
+
+    public Double distanceFrom(LatLng lastKnownLocation, MapObject mapObject) {
+        LatLng objectLatLng = new LatLng(mapObject.getLat(), mapObject.getLon());
+        return lastKnownLocation.distanceTo(objectLatLng);
     }
 }

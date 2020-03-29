@@ -66,7 +66,6 @@ public class ActivityRanking extends AppCompatActivity {
     public void parseRequestRankingResponse(JSONObject jsonObject) {
 
         try {
-
             JSONArray jsonArray = (JSONArray) jsonObject.get("ranking");
             for (int i = 0; i < jsonArray.length(); i ++) {
                 JSONObject jsonUser = (JSONObject) jsonArray.get(i);

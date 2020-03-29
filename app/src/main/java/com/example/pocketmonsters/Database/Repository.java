@@ -96,7 +96,6 @@ public class Repository {
     }
 
     // ROOM
-
     public void getMapObjectFromDb(int id, AsyncTaskCallback asyncTaskCallback) {
         new GetMapObjectAsyncTask(id, mapObjectDao, asyncTaskCallback).execute();
     }
@@ -244,7 +243,6 @@ public class Repository {
 
 
     // REMOTE
-
     public void requestSessionId(VolleyCallback volleyCallback) {
         JsonObjectRequest jsonObjectRequest = volleySingleton
                 .createRequest(BASE_URL + REGISTER, null, volleyCallback);
@@ -264,7 +262,6 @@ public class Repository {
                 (BASE_URL + GET_MAP, jsonObject, volleyCallback);
         volleySingleton.addToRequestQueue(jsonObjectRequest);
     }
-
 
     public void requestImage(final MapObject mapObject, VolleyCallback volleyCallback) {
 

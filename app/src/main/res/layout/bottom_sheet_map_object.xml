@@ -18,6 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
+        android:layout_marginTop="8dp"
         android:textAppearance="@style/TextAppearance.PocketTheme.Headline5" />
 
     <ImageView
@@ -32,9 +33,23 @@
         android:id="@+id/txt_map_object_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="dimensione"
+        android:textAppearance="@style/TextAppearance.PocketTheme.Subtitle1" />
+
+    <TextView
+        android:id="@+id/txt_map_object_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="distanza"
+        android:textAppearance="@style/TextAppearance.PocketTheme.Subtitle1" />
+
+    <TextView
+        android:id="@+id/txt_map_object_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:textAppearance="@style/TextAppearance.PocketTheme.Subtitle2"
-        android:textStyle="italic" />
+        android:text="hint"
+        android:textAppearance="@style/TextAppearance.PocketTheme.Subtitle1" />
 
     <Button
         android:id="@+id/btn_fight_eat"

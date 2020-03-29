@@ -298,6 +298,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Bundle bundle = new Bundle();
 
                 boolean canInteract;
+                double distance;
 
                 if (PermissionsManager.areLocationPermissionsGranted(getApplicationContext())) {
 
@@ -306,7 +307,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         lastKnownLocation.setLatitude(locationComponent.getLastKnownLocation().getLatitude());
                         lastKnownLocation.setLongitude(locationComponent.getLastKnownLocation().getLongitude());
                         canInteract = (ModelSingleton.getInstance().getSignedUser().canInteract(lastKnownLocation, mapObject));
+                        distance = (ModelSingleton.getInstance().getSignedUser().distanceFrom(lastKnownLocation, mapObject));
                         bundle.putBoolean("canInteract", canInteract);
+                        bundle.putDouble("distance", distance);
 
                     } else {
                         Toast.makeText(MapActivity.this,
